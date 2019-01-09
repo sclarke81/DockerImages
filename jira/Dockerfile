@@ -14,7 +14,7 @@ RUN Expand-Archive -Path $Env:ZIP_FILE -DestinationPath $Env:TEMP_DIR ; \
     New-Item -ItemType "Directory" -Path $Env:TOOL_DIR ; \
     Get-ChildItem $Env:TEMP_DIR | Get-ChildItem | Move-Item -Destination $Env:TOOL_DIR
 
-FROM sclarke81/openjdk8:nanoserver
+FROM sclarke81/openjdk:jdk8u192-b12-nanoserver
 
 ARG TOOL_DIR
 ARG DATA_DIR='C:\data\jira'

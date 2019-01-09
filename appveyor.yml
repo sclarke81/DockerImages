@@ -17,5 +17,5 @@ clone_folder: c:\project
 #---------------------------------#
 
 build_script:
-  - ps: .\nanoserver-jre\build.ps1
+  - ps: .\build.ps1
 
