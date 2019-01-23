@@ -1,14 +1,16 @@
-ARG TOOL_DIR='C:\tools\OpenJDK'
+ARG SERVER_VERSION=ltsc2016
 
-FROM microsoft/windowsservercore:ltsc2016 as core
-
-ARG TOOL_DIR
-ARG ZIP_FILE='jdk.zip'
-ARG TEMP_DIR='C:\temp'
+FROM microsoft/windowsservercore:${SERVER_VERSION}
 
 SHELL ["powershell", "-Command", "$ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue';"]
 
-ADD 'https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u192-b12/OpenJDK8U-jdk_x64_windows_hotspot_8u192b12.zip' ${ZIP_FILE}
+ARG TOOL_DIR='C:\tools\OpenJDK'
+ARG ZIP_FILE='jdk.zip'
+ARG TEMP_DIR='C:\temp'
+ARG URL='https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u192-b12/OpenJDK8U-jdk_x64_windows_hotspot_8u192b12.zip'
+
+# Ideall I'd use Invoke-WebRequest inside the RUN statement, but it doesn't work behind my proxy.
+ADD ${URL} ${ZIP_FILE}
 
 RUN Expand-Archive -Path $Env:ZIP_FILE -DestinationPath $Env:TEMP_DIR ; \
     New-Item -ItemType "Directory" -Path $Env:TOOL_DIR ; \
@@ -21,13 +23,3 @@ RUN Expand-Archive -Path $Env:ZIP_FILE -DestinationPath $Env:TEMP_DIR ; \
     [Environment]::SetEnvironmentVariable('PATH', ($Env:TOOL_DIR + '\bin;' + $Env:PATH), [EnvironmentVariableTarget]::Machine) ; \
     [Environment]::SetEnvironmentVariable('JAVA_HOME', $Env:TOOL_DIR, [EnvironmentVariableTarget]::Machine) ; \
     [Environment]::SetEnvironmentVariable('JRE_HOME', ($Env:TOOL_DIR + '\jre'), [EnvironmentVariableTarget]::Machine)
-
-FROM microsoft/nanoserver:sac2016 as nano
-
-ARG TOOL_DIR
-
-COPY --from=core ${TOOL_DIR} ${TOOL_DIR}
-
-RUN setx PATH "%PATH%;%TOOL_DIR%\bin" && \
-    setx JAVA_HOME "%TOOL_DIR%" && \
-    setx JRE_HOME "%TOOL_DIR%\jre"
